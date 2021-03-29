@@ -22,21 +22,21 @@ public class UsersDaoJdbcTemplateImpl implements UserDao {
 
 
     //language=SQL
-    private String SQL_SELECT_ALL = "SELECT * FROM MydataBase.Users";
+    private String SQL_SELECT_ALL = "SELECT * FROM froschema.users";
     //language=SQL
-    private String SQL_SELECT_BY_ID = "SELECT * FROM MydataBase.Users WHERE id=?";
+    private String SQL_SELECT_BY_ID = "SELECT * FROM froschema.users WHERE id=?";
     //language=SQL
-    private final String SQL_SELECT_ALL_BY_FIRSTNAME="SELECT * FROM MydataBase.Users WHERE first_name=?";
+    private final String SQL_SELECT_ALL_BY_FIRSTNAME="SELECT * FROM froschema.users WHERE first_name=?";
     //language=SQL
     private String SQL_SELECT_USERS_WITH_CARS=
 //            "SELECT * FROM froschema.users LEFT JOIN froschema.car ON users.id = car.id_owner WHERE users.id=?";
     "SELECT users.*,car.id as car_id, car.model FROM froschema.users LEFT JOIN froschema.car ON users.id = car.id_owner WHERE  users.id=?";
 
     //language=SQL
-    private String SQL_SELECT_USERS_BY_ID ="SELECT * FROM MydataBase.Users WHERE id = :id";
+    private String SQL_SELECT_USERS_BY_ID ="SELECT * FROM froschema.users WHERE id = :id";
 
     //language=SQL
-    private String SQL_INSERT_USER="INSERT INTO Users(first_name, last_name) VALUES (:firstName,:lastName)";
+    private String SQL_INSERT_USER="INSERT INTO users(first_name, last_name) VALUES (:firstName,:lastName)";
 
 
     private Map<Long,User> usersMap= new HashMap<>();
@@ -54,13 +54,24 @@ public class UsersDaoJdbcTemplateImpl implements UserDao {
                 .lastName(resultSet.getString("last_name"))
                 .age(resultSet.getInt("age")).build();
 
-//    private RowMapper<User>userRowMapper= (resultSet, i) -> {
-//       return new User(
-//                resultSet.getInt("id"),
-//                resultSet.getString("login"),
-//                resultSet.getString("password")
-//       ,new ArrayList<Car>());
-//    };
+    private RowMapper<User> userRowMapper
+            = (ResultSet resultSet, int i) -> {
+        Long id = resultSet.getLong("id");
+
+        if (!usersMap.containsKey(id)) {
+            String firstName = resultSet.getString("first_name");
+            String lastName = resultSet.getString("last_name");
+            User user = new User(id, firstName, lastName,5, new ArrayList<>());
+            usersMap.put(id, user);
+        }
+
+        Car car = new Car(resultSet.getLong("car_id"),
+                resultSet.getString("model"), usersMap.get(id));
+
+        usersMap.get(id).getCars().add(car);
+
+        return usersMap.get(id);
+    };
 
     @Override
     public Optional find(Long id) {

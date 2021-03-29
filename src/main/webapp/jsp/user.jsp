@@ -14,7 +14,7 @@
 
 
 <div class="form-style-2">
-    <form method="post" action="/users">
+    <form method="post" action="/jpa/users">
         <label for="firstName">First Name
             <input class="input-field" type="text" id="firstName" name="firstName">
         </label>
