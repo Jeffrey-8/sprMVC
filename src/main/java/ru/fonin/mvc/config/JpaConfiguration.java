@@ -59,5 +59,4 @@ public class JpaConfiguration {
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
         return properties;
     }
-
 }
